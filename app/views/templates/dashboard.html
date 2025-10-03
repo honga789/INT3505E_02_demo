@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Dashboard</h2>
+<div class="cards">
+  <div class="card"><div class="card-title">Tổng sách</div><div class="card-value" id="total_books">—</div></div>
+  <div class="card"><div class="card-title">Sách còn sẵn</div><div class="card-value" id="available_books">—</div></div>
+  <div class="card"><div class="card-title">Đang mượn</div><div class="card-value" id="active_loans">—</div></div>
+  <div class="card"><div class="card-title">Quá hạn</div><div class="card-value" id="overdue_loans">—</div></div>
+</div>
+
+<h3>Top sách mượn nhiều</h3>
+<table class="table" id="top_books_tbl">
+  <thead><tr><th>#</th><th>Tiêu đề</th><th>Lượt mượn</th></tr></thead>
+  <tbody></tbody>
+</table>
+{% endblock %}
+{% block scripts %}
+<script>
+  if(!getToken()) { location.href='/login'; }
+  authFetch('/api/v1/stats').then(r=>r.json()).then(s=>{
+    document.getElementById('total_books').textContent = s.total_books;
+    document.getElementById('available_books').textContent = s.available_books;
+    document.getElementById('active_loans').textContent = s.active_loans;
+    document.getElementById('overdue_loans').textContent = s.overdue_loans;
+    const tb = document.querySelector('#top_books_tbl tbody'); tb.innerHTML = '';
+    s.top_books.forEach((row, i)=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${i+1}</td><td>${row.title}</td><td>${row.loan_count}</td>`;
+      tb.appendChild(tr);
+    });
+  }).catch(()=>{});
+</script>
+{% endblock %}

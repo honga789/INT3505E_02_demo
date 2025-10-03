@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <title>Library Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+</head>
+<body>
+  <header class="header">
+    <div class="brand">SOA Library Admin</div>
+    <nav class="nav">
+      <a href="/">Dashboard</a>
+      <a href="/books">Sách</a>
+      <a href="/loans">Mượn–Trả</a>
+      <a href="/logout" id="logout-link">Đăng xuất</a>
+    </nav>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <ul>
+        <li><a href="/">Dashboard</a></li>
+        <li><a href="/books">Sách</a></li>
+        <li><a href="/loans">Mượn–Trả</a></li>
+      </ul>
+    </aside>
+    <main class="content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  <script>
+    // Token helpers
+    const TOKEN_KEY = "LIB_ADMIN_TOKEN";
+    function setToken(t){ sessionStorage.setItem(TOKEN_KEY, t); }
+    function getToken(){ return sessionStorage.getItem(TOKEN_KEY); }
+    function clearToken(){ sessionStorage.removeItem(TOKEN_KEY); }
+    function authFetch(url, opts={}){
+      const token = getToken();
+      opts.headers = Object.assign({}, opts.headers||{}, {"Content-Type":"application/json", "Authorization": "Bearer " + token});
+      return fetch(url, opts);
+    }
+    // Logout
+    document.getElementById('logout-link')?.addEventListener('click', () => { clearToken(); });
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
