@@ -1,0 +1,299 @@
+openapi: 3.0.3
+info:
+  title: Books Service
+  version: 1.0.0
+  description: >
+    Demo API quản lý sách (local + JWT).
+    - Versioning: prefix /api/v1
+    - Filter/sort qua query params
+servers:
+  - url: http://localhost:5000
+
+tags:
+  - name: Auth
+    description: Cấp JWT token
+  - name: Books
+    description: Quản lý sách
+
+security:
+  - bearerAuth: [] 
+
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Đăng nhập lấy JWT
+      description: |
+        DEMO: dùng username/password = `admin` / `admin`.
+        Trả về access_token (JWT, HS256) dùng cho các endpoint còn lại.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthLoginRequest"
+            examples:
+              demo:
+                value: { username: "admin", password: "admin" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AuthLoginResponse" }
+              examples:
+                demo:
+                  value:
+                    access_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                    token_type: Bearer
+                    expires_in: 7200
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              examples:
+                unauthorized:
+                  $ref: "#/components/examples/UnauthorizedError"
+
+  /api/v1/books:
+    get:
+      tags: [Books]
+      summary: List books
+      description: |
+        Hỗ trợ search/filter/sort.
+        x-sla: 500 req/min (mô tả, không ràng buộc bằng máy)
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+          description: Từ khóa tìm kiếm (title/author)
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [title_asc, title_desc, year_asc, year_desc]
+          description: Tiêu chí sắp xếp
+      responses:
+        "200":
+          description: OK
+          headers:
+            X-RateLimit-Limit:
+              $ref: "#/components/headers/RateLimitLimit"
+            X-RateLimit-Remaining:
+              $ref: "#/components/headers/RateLimitRemaining"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Book" }
+                  total: { type: integer, example: 42 }
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              examples:
+                unauthorized:
+                  $ref: '#/components/examples/UnauthorizedError'
+    post:
+      tags: [Books]
+      summary: Create a book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BookCreate" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Book" }
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              examples:
+                unauthorized:
+                  $ref: '#/components/examples/UnauthorizedError'
+
+  /api/v1/books/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, format: uuid }
+        description: Book ID
+    get:
+      tags: [Books]
+      summary: Get a book by ID
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Book" }
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              examples:
+                unauthorized:
+                  $ref: '#/components/examples/UnauthorizedError'
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+    patch:
+      tags: [Books]
+      summary: Update a book (partial)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BookUpdate" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Book" }
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              examples:
+                unauthorized:
+                  $ref: '#/components/examples/UnauthorizedError'
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+    delete:
+      tags: [Books]
+      summary: Delete a book
+      responses:
+        "204": { description: No Content }
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              examples:
+                unauthorized:
+                  $ref: '#/components/examples/UnauthorizedError'
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  headers:
+    RateLimitLimit:
+      description: Tổng hạn mức request trong cửa sổ thời gian
+      schema: { type: integer, example: 500 }
+    RateLimitRemaining:
+      description: Số request còn lại trong cửa sổ thời gian
+      schema: { type: integer, example: 498 }
+
+  examples:
+    UnauthorizedError:
+      value:
+        code: UNAUTHORIZED
+        message: Invalid or missing token
+    NotFoundError:
+      value:
+        code: NOT_FOUND
+        message: Book not found
+
+  schemas:
+    AuthLoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username: { type: string, example: "admin" }
+        password: { type: string, example: "admin" }
+
+    AuthLoginResponse:
+      type: object
+      required: [access_token, token_type, expires_in]
+      properties:
+        access_token: { type: string, description: "JWT token (HS256)" }
+        token_type: { type: string, example: "Bearer" }
+        expires_in: { type: integer, example: 7200, description: "seconds" }
+
+    Book:
+      type: object
+      required: [id, title, author, year, price]
+      properties:
+        id:
+          {
+            type: string,
+            format: uuid,
+            example: "d290f1ee-6c54-4b01-90e6-d701748f0851",
+          }
+        title: { type: string, example: "Clean Code" }
+        author: { type: string, example: "Robert C. Martin" }
+        year: { type: integer, example: 2008 }
+        price: { type: number, format: float, example: 19.99 }
+        tags:
+          type: array
+          items: { type: string }
+
+    BookCreate:
+      type: object
+      required: [title, author]
+      properties:
+        title: { type: string }
+        author: { type: string }
+        year: { type: integer, minimum: 0 }
+        price: { type: number, format: float }
+        tags:
+          type: array
+          items: { type: string }
+
+    BookUpdate:
+      type: object
+      description: Các trường đều tùy chọn
+      properties:
+        title: { type: string }
+        author: { type: string }
+        year: { type: integer, minimum: 0 }
+        price: { type: number, format: float }
+        tags:
+          type: array
+          items: { type: string }
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string, example: "NOT_FOUND" }
+        message: { type: string, example: "Book not found" }
