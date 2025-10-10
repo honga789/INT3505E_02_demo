@@ -1,0 +1,4 @@
+Flask
+PyJWT>=2.8
+connexion[flask,swagger-ui]==3.*
+uvicorn
