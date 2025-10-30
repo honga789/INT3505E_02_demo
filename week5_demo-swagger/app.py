@@ -2,7 +2,8 @@ import os
 import uuid
 from datetime import datetime, timedelta, timezone
 from copy import deepcopy
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, send_file
+from flask_swagger_ui import get_swaggerui_blueprint
 import jwt
 
 app = Flask(__name__)
@@ -132,26 +133,6 @@ def apply_search_and_sort(items, q, sort_key):
     return data
 
 
-@app.before_request
-def handle_cors_preflight():
-    if request.method == "OPTIONS":
-        resp = make_response("", 204)
-        resp.headers["Access-Control-Allow-Origin"] = "*"
-        resp.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type"
-        resp.headers["Access-Control-Allow-Methods"] = "GET,POST,PATCH,DELETE,OPTIONS"
-        return resp
-
-@app.after_request
-def add_headers(resp):
-    resp.headers["Access-Control-Allow-Origin"] = "*"
-    resp.headers["Access-Control-Expose-Headers"] = (
-        "X-RateLimit-Limit, X-RateLimit-Remaining, Location, Authorization"
-    )
-    if 200 <= resp.status_code < 300:
-        resp.headers["X-RateLimit-Limit"] = "500"
-        resp.headers["X-RateLimit-Remaining"] = "498"
-    return resp
-
 @app.post("/auth/login")
 def login():
     data = request.get_json(silent=True) or {}
@@ -226,6 +207,24 @@ def delete_book(id):
 @app.get("/")
 def home():
     return "Books Service running. Use /auth/login to get a JWT, then call /api/v1/books.*", 200
+
+
+@app.get("/openapi.yaml")
+def openapi_spec():
+    return send_file("openapi.yaml", mimetype="application/yaml")
+
+SWAGGER_URL = '/api/docs'
+API_URL = '/openapi.yaml'
+
+swaggerui_blueprint = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={
+        'app_name': "Test application"
+    },
+)
+
+app.register_blueprint(swaggerui_blueprint)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

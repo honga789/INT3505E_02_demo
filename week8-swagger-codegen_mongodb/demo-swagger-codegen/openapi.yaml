@@ -1,0 +1,87 @@
+openapi: 3.0.3
+info:
+  title: Books Service
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000
+paths:
+  /books:
+    get:
+      summary: List all books
+      responses:
+        '200':
+          description: A JSON array of books
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+    post:
+      summary: Create a new book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookCreate'
+      responses:
+        '201':
+          description: The created book
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+  /books/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      summary: Get a book by id
+      responses:
+        '200':
+          description: A single book
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          description: Not found
+    delete:
+      summary: Delete a book by id
+      responses:
+        '204':
+          description: Deleted
+components:
+  schemas:
+    Book:
+      type: object
+      required: [id, title, author]
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        title:
+          type: string
+          example: Clean Architecture
+        author:
+          type: string
+          example: Robert C. Martin
+        year:
+          type: integer
+          example: 2017
+    BookCreate:
+      type: object
+      required: [title, author]
+      properties:
+        title:
+          type: string
+        author:
+          type: string
+        year:
+          type: integer

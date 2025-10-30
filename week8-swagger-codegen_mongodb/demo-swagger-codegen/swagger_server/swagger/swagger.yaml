@@ -1,0 +1,118 @@
+openapi: 3.0.3
+info:
+  title: Books Service
+  version: 1.0.0
+servers:
+- url: http://localhost:5000
+paths:
+  /books:
+    get:
+      summary: List all books
+      operationId: books_get
+      responses:
+        "200":
+          description: A JSON array of books
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Book"
+                x-content-type: application/json
+      x-openapi-router-controller: swagger_server.controllers.default_controller
+    post:
+      summary: Create a new book
+      operationId: books_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookCreate"
+        required: true
+      responses:
+        "201":
+          description: The created book
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+      x-openapi-router-controller: swagger_server.controllers.default_controller
+  /books/{id}:
+    get:
+      summary: Get a book by id
+      operationId: books_id_get
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: A single book
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+        "404":
+          description: Not found
+      x-openapi-router-controller: swagger_server.controllers.default_controller
+    delete:
+      summary: Delete a book by id
+      operationId: books_id_delete
+      parameters:
+      - name: id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "204":
+          description: Deleted
+      x-openapi-router-controller: swagger_server.controllers.default_controller
+components:
+  schemas:
+    Book:
+      required:
+      - author
+      - id
+      - title
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        title:
+          type: string
+          example: Clean Architecture
+        author:
+          type: string
+          example: Robert C. Martin
+        year:
+          type: integer
+          example: 2017
+      example:
+        year: 2017
+        author: Robert C. Martin
+        id: 1
+        title: Clean Architecture
+    BookCreate:
+      required:
+      - author
+      - title
+      type: object
+      properties:
+        title:
+          type: string
+        author:
+          type: string
+        year:
+          type: integer
+
