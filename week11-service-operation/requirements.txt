@@ -1,0 +1,4 @@
+Flask
+prometheus-flask-exporter
+Flask-Limiter
+requests
