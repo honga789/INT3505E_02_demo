@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UET-FA API - Developer Portal</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; color: #333; }
+        header { border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+        nav a { margin-right: 15px; text-decoration: none; color: blue; font-weight: bold; }
+        h1, h2, h3 { color: #2c3e50; }
+        .endpoint { background-color: #f4f4f4; padding: 10px; border-left: 5px solid #27ae60; font-family: monospace; }
+        .method { font-weight: bold; color: #fff; background: #27ae60; padding: 2px 6px; border-radius: 4px; }
+        code { background: #eee; padding: 2px 4px; border-radius: 3px; }
+        
+        #sandbox { border: 1px solid #ccc; padding: 20px; background-color: #f9f9f9; border-radius: 5px; margin-top: 30px; }
+        textarea { width: 100%; height: 80px; margin-bottom: 10px; padding: 5px; }
+        button { padding: 10px 20px; background-color: #007bff; color: white; border: none; cursor: pointer; font-size: 16px; border-radius: 3px; }
+        button:hover { background-color: #0056b3; }
+        #response-area { background: #333; color: #0f0; padding: 15px; font-family: monospace; margin-top: 10px; white-space: pre-wrap; min-height: 100px; }
+
+        #pricing { margin-top: 40px; }
+        .pricing-container { display: flex; flex-wrap: wrap; gap: 15px; text-align: center; }
+        .pricing-card { flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 20px; min-width: 180px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .pricing-card h3 { background-color: #eee; margin: -20px -20px 20px -20px; padding: 15px; border-radius: 8px 8px 0 0; font-size: 1.2em; }
+        .price { font-size: 1.5em; color: #d35400; font-weight: bold; margin-bottom: 15px; display: block; }
+        .features { list-style: none; padding: 0; text-align: left; font-size: 0.9em; }
+        .features li { border-bottom: 1px dashed #eee; padding: 8px 0; }
+        .btn-buy { display: block; width: 100%; padding: 10px 0; background-color: #27ae60; color: white; text-decoration: none; border-radius: 4px; margin-top: 15px; cursor: pointer;}
+        .btn-buy.contact { background-color: #34495e; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>UET-FA API <small style="font-size: 0.5em; color: #666;">Developer Portal</small></h1>
+        <nav>
+            <a href="#intro">Giới thiệu</a>
+            <a href="#docs">Tài liệu</a>
+            <a href="#sandbox">Dùng thử</a>
+            <a href="#pricing">Bảng giá</a>
+            <a href="#" style="float: right;">Đăng nhập</a>
+        </nav>
+    </header>
+
+    <section id="intro">
+        <h2>Giới thiệu</h2>
+        <p>Chào mừng đến với UET-FA API. Chúng tôi cung cấp giải pháp AI để trả lời tự động các câu hỏi của sinh viên về quy chế đào tạo, học phí, và lịch sinh hoạt.</p>
+        <p>Tích hợp UET-FA vào website trường hoặc ứng dụng mobile của bạn chỉ trong vài phút.</p>
+    </section>
+
+    <hr>
+
+    <section id="docs">
+        <h2>Tài liệu API (Documentation)</h2>
+        <p>Base URL: <code>https://api.uetfa.com/v1</code></p>
+
+        <h3>Endpoint: Gửi câu hỏi tư vấn</h3>
+        <div class="endpoint">
+            <span class="method">POST</span> /chat/message
+        </div>
+        
+        <p><strong>Mô tả:</strong> Gửi câu hỏi của sinh viên và nhận về câu trả lời từ AI.</p>
+        
+        <h4>Headers:</h4>
+        <ul>
+            <li><code>Authorization</code>: Bearer YOUR_API_KEY</li>
+            <li><code>Content-Type</code>: application/json</li>
+        </ul>
+
+        <h4>Body (JSON Request):</h4>
+        <pre><code>{
+  "student_id": "SV23051546",    // (Tuỳ chọn) Mã sinh viên để cá nhân hóa
+  "message": "Hạn đóng học phí học kỳ này là bao giờ?"
+}</code></pre>
+
+        <h4>Response (JSON):</h4>
+        <pre><code>{
+  "status": "success",
+  "data": {
+    "answer": "Theo thông báo số 123/TB-DT, hạn đóng học phí học kỳ 1 năm 2025 là ngày 5/12/2025.",
+    "confidence": 0.98,
+    "source": "Phòng Tài Chính - Kế Toán"
+  }
+}</code></pre>
+    </section>
+
+    <section id="sandbox">
+        <h2>API Sandbox (Dùng thử)</h2>
+        <p>Nhập câu hỏi vào bên dưới để test phản hồi của Bot (Mô phỏng).</p>
+
+        <label for="apiKey"><strong>API Key:</strong></label><br>
+        <input type="text" id="apiKey" value="demo_key_12345" style="width: 300px; margin-bottom: 10px;" disabled><br>
+
+        <label for="questionInput"><strong>Câu hỏi của sinh viên:</strong></label>
+        <textarea id="questionInput" placeholder="Ví dụ: Bao giờ được đăng ký tín chỉ?"></textarea>
+
+        <button onclick="callFakeApi()">Send</button>
+
+        <div id="loading" style="display:none; margin-top: 10px;">Đang xử lý...</div>
+
+        <h3>Response Output:</h3>
+        <div id="response-area">// Kết quả JSON sẽ hiện ở đây...</div>
+    </section>
+
+    <!-- 5. BẢNG GIÁ (PRICING) -->
+    <section id="pricing">
+        <h2>Bảng giá dịch vụ</h2>
+        <p>Lựa chọn gói phù hợp với quy mô trường học hoặc dự án của bạn.</p>
+        
+        <div class="pricing-container">
+            <!-- Gói 1: Free -->
+            <div class="pricing-card">
+                <h3>Gói Free</h3>
+                <span class="price">0 VNĐ</span>
+                <ul class="features">
+                    <li>✓ 500 request / tháng</li>
+                    <li>✓ Dữ liệu cơ bản (Public)</li>
+                    <li>✓ Hỗ trợ qua Cộng đồng</li>
+                    <li>✓ Giới hạn 1 QPS</li>
+                </ul>
+                <div onclick="alert('Đăng kí đi chờ chi')" class="btn-buy">Đăng ký gói này</div>
+            </div>
+
+            <!-- Gói 2: Basic -->
+            <div class="pricing-card">
+                <h3>Gói Basic</h3>
+                <span class="price">500k <small style="font-size:0.5em; color:#666">/tháng</small></span>
+                <ul class="features">
+                    <li>✓ 50,000 request / tháng</li>
+                    <li>✓ 3 bot tùy chỉnh</li>
+                    <li>✓ Hỗ trợ qua Email (24h)</li>
+                    <li>✓ Không giới hạn QPS</li>
+                </ul>
+                <div onclick="buyFakeApi('5 trăm nghìn đồng')" class="btn-buy">Mua gói này</div>
+            </div>
+
+            <!-- Gói 3: Pro -->
+            <div class="pricing-card">
+                <h3>Gói Pro</h3>
+                <span class="price">2tr <small style="font-size:0.5em; color:#666">/tháng</small></span>
+                <ul class="features">
+                    <li>✓ 500,000 request / tháng</li>
+                    <li>✓ Huấn luyện dữ liệu riêng</li>
+                    <li>✓ Hỗ trợ ưu tiên (Live chat)</li>
+                    <li>✓ Dashboard thống kê</li>
+                </ul>
+                <div onclick="buyFakeApi('2 triệu đồng')" class="btn-buy">Mua gói này</div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        function buyFakeApi(moneyAmount) {
+            alert(`Tài khoản của bạn bị trừ ${moneyAmount}`)
+        }
+
+        function callFakeApi() {
+            const question = document.getElementById('questionInput').value;
+            const output = document.getElementById('response-area');
+            const loading = document.getElementById('loading');
+
+            if (!question.trim()) {
+                alert("Vui lòng nhập câu hỏi!");
+                return;
+            }
+
+            loading.style.display = 'block';
+            output.innerText = "";
+
+            setTimeout(() => {
+                loading.style.display = 'none';
+
+                let fakeAnswer = "";
+                let source = "";
+
+                if (question.toLowerCase().includes("học phí")) {
+                    fakeAnswer = "Học phí học kỳ này là 1.000.000 VNĐ/tín chỉ. Hạn nộp là 5/12/2025.";
+                    source = "Phòng Tài Vụ";
+                } else if (question.toLowerCase().includes("điểm")) {
+                    fakeAnswer = "Bạn có thể xem điểm tại portal.uet.edu.vn. Điểm thi cuối kỳ sẽ có sau 2 tuần.";
+                    source = "Phòng Khảo Thí";
+                } else if (question.toLowerCase().includes("ngành") || question.toLowerCase().includes("khoa")) {
+                    fakeAnswer = "Bạn có thể xem thêm thông tin các khoa và ngành học tại https://uet.vnu.edu.vn. Tất cả các ngành học của UET đều rất tuyệt vời";
+                    source = "Phòng Đào Tạo";
+                } else if (question.toLowerCase().includes("uet")) {
+                    fakeAnswer = "Bạn có thể xem thêm thông tin tại trang Facebook của trường. UET connect sẽ diễn ra vào 7/12/2005 nhằm kết nối sinh viên UET với nhau";
+                    source = "Phòng Đào Tạo";
+                } else {
+                    fakeAnswer = "Xin lỗi, tôi chưa hiểu rõ câu hỏi. Bạn có thể hỏi về học phí, lịch học hoặc quy chế.";
+                    source = "AI General Model";
+                }
+
+                const responseData = {
+                    status: "success",
+                    timestamp: new Date().toISOString(),
+                    data: {
+                        answer: fakeAnswer,
+                        confidence: 0.95,
+                        related_link: "https://daotao.uet.edu.vn/thong-bao",
+                        source: source
+                    }
+                };
+
+                output.innerText = JSON.stringify(responseData, null, 2);
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

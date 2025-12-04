@@ -2,6 +2,7 @@ import logging
 from flask import Flask, jsonify, request
 from prometheus_flask_exporter import PrometheusMetrics
 from flask_limiter import Limiter
+from prometheus_client import Counter
 from flask_limiter.util import get_remote_address
 
 app = Flask(__name__)
@@ -16,8 +17,9 @@ logger = logging.getLogger("LibraryService")
 metrics = PrometheusMetrics(app)
 metrics.info('app_info', 'Library API', version='1.0.0')
 
-book_not_found_counter = metrics.counter(
-    'book_not_found_total', 'Count of requests for non-existent books'
+book_not_found_counter = Counter(
+    'book_not_found_total', 
+    'Count of requests for non-existent books'
 )
 
 limiter = Limiter(
@@ -77,4 +79,4 @@ def simulate_crash():
         return jsonify({"error": "Internal Error"}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=False, port=5000)
